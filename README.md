@@ -1,13 +1,20 @@
 # Roborock_VacuumZones_VR
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge)](https://github.com/hacs/integration)
-[![version_badge](https://img.shields.io/badge/version-1.0.0-blue.svg?style=for-the-badge)](https://github.com/Eugen417/ha_roborock_vacuum_zones)
+[![version_badge](https://img.shields.io/badge/version-1.0.1-blue.svg?style=for-the-badge)](https://github.com/Eugen417/ha_roborock_vacuum_zones)
 [![tested_badge](https://img.shields.io/badge/tested-Saros%20Z70-green.svg?style=for-the-badge)](https://github.com/Eugen417/ha_roborock_vacuum_zones)
 
 Интеллектуальная надстройка над официальной интеграцией Roborock для Home Assistant. 
 Создана для автоматического управления зонами (комнатами) пылесоса **Roborock Saros Z70**.
 
 ---
+
+## ⚠️ Предварительные требования
+
+Для работы этой интеграции **обязательно** должна быть установлена и настроена интеграция для работы с картами:
+
+1. Установите [RoborockCustomMap](https://github.com/Lash-L/RoborockCustomMap) через HACS.
+...
 
 ## 📥 Установка
 
