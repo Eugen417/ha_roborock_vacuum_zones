@@ -1,27 +1,61 @@
 import logging
 import asyncio
-from homeassistant.components.vacuum import StateVacuumEntity, VacuumEntityFeature
-from homeassistant.const import STATE_CLEANING, STATE_RETURNING, STATE_IDLE, STATE_DOCKED
+from homeassistant.components.vacuum import StateVacuumEntity, VacuumEntityFeature, VacuumActivity
 
 _LOGGER = logging.getLogger(__name__)
 
-# Глобальные переменные для координации запуска
+# Глобальные переменные для группировки
 _PENDING_ROOMS = set()
 _TIMER_HANDLE = None
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
-    main_vacuum = config_entry.data.get("main_vacuum")
-    rooms = config_entry.data.get("rooms", {})
+    """Настройка платформы (Динамический поиск комнат)."""
+    # В вашей конфигурации мастер-пылесос лежит в CONF_MASTER_VACUUM или main_vacuum
+    # Пытаемся достать оба варианта
+    master_id = config_entry.data.get("main_vacuum") or config_entry.data.get("master_vacuum")
     
-    entities = [RoborockRoomVacuum(main_vacuum, rid, rname) for rid, rname in rooms.items()]
-    async_add_entities(entities)
+    if not master_id:
+        _LOGGER.error("Не найден ID основного пылесоса в настройках")
+        return False
 
-class RoborockRoomVacuum(StateVacuumEntity):
-    def __init__(self, main_vacuum, room_id, room_name):
-        self._main_vacuum = main_vacuum
+    # Ищем объект карты и комнаты (ваш рабочий метод)
+    map_entities = hass.states.async_entity_ids("image")
+    rooms_found = {}
+
+    for entity_id in map_entities:
+        state = hass.states.get(entity_id)
+        if state and "rooms" in state.attributes:
+            rooms_found = state.attributes["rooms"]
+            _LOGGER.info(f"Найдена карта {entity_id} с комнатами: {rooms_found}")
+            break
+
+    entities = []
+    for r_id, r_info in rooms_found.items():
+        # Определяем имя комнаты (ваш фикс)
+        if hasattr(r_info, "name"):
+            room_name = r_info.name
+        elif isinstance(r_info, dict):
+            room_name = r_info.get("name", f"Комната {r_id}")
+        else:
+            room_name = f"Комната {r_id}"
+            
+        entities.append(RoborockZoneEntity(hass, room_name, r_id, master_id))
+
+    if entities:
+        _LOGGER.info(f"Добавляем {len(entities)} виртуальных пылесосов")
+        async_add_entities(entities)
+    else:
+        _LOGGER.warning("Комнаты не найдены в атрибутах карты!")
+        
+    return True
+
+class RoborockZoneEntity(StateVacuumEntity):
+    def __init__(self, hass, name, room_id, master):
+        self.hass = hass
         self._room_id = int(room_id)
-        self._attr_name = f"Clean {room_name}"
-        self._attr_unique_id = f"v_vac_{room_id}_{main_vacuum}"
+        self._master = master
+        self._attr_name = f"Уборка {name}"
+        self._attr_unique_id = f"roborock_vr_{master.split('.')[-1]}_{room_id}"
         self._attr_supported_features = (
             VacuumEntityFeature.START | 
             VacuumEntityFeature.STOP | 
@@ -29,66 +63,55 @@ class RoborockRoomVacuum(StateVacuumEntity):
         )
 
     @property
-    def state(self):
-        """Отображаем состояние основного пылесоса."""
-        main_state = self.hass.states.get(self._main_vacuum)
-        return main_state.state if main_state else None
+    def activity(self):
+        """Состояние для HA 2026."""
+        master_state = self.hass.states.get(self._master)
+        if not master_state:
+            return VacuumActivity.IDLE
+        
+        s = master_state.state
+        if s == "cleaning": return VacuumActivity.CLEANING
+        if s == "returning": return VacuumActivity.RETURNING
+        if s == "docked": return VacuumActivity.DOCKED
+        if s == "paused": return VacuumActivity.PAUSED
+        return VacuumActivity.IDLE
 
     async def async_start(self):
-        """Интеллектуальный запуск зоны."""
+        """Умный запуск с ожиданием 2 секунды."""
         global _TIMER_HANDLE, _PENDING_ROOMS
         
-        main_state = self.hass.states.get(self._main_vacuum)
-        
-        # ЕСЛИ ПЫЛЕСОС УЖЕ УБИРАЕТ:
-        # Мы не перебиваем его, чтобы не сбить текущий прогресс.
-        if main_state and main_state.state == STATE_CLEANING:
-            _LOGGER.warning(f"Пылесос {self._main_vacuum} уже занят уборкой. Команда для комнаты {self._room_id} проигнорирована.")
+        if self.activity == VacuumActivity.CLEANING:
+            _LOGGER.warning("Пылесос уже занят, игнорируем")
             return
 
-        # Добавляем комнату в пакет на отправку
         _PENDING_ROOMS.add(self._room_id)
-        
-        # Сбрасываем старый таймер, если он был, и запускаем новый (окно 2 сек)
+
         if _TIMER_HANDLE:
             _TIMER_HANDLE.cancel()
             
+        # Ждем 2 секунды, чтобы собрать все нажатые комнаты
         _TIMER_HANDLE = self.hass.loop.call_later(
-            2, lambda: self.hass.async_create_task(self._execute_batch_clean())
+            2, lambda: self.hass.async_create_task(self._execute_batch())
         )
-        _LOGGER.info(f"Комната {self._room_id} добавлена в пакет запуска. Ждем завершения выбора...")
 
-    async def _execute_batch_clean(self):
-        """Сборная отправка всех выбранных сегментов."""
+    async def _execute_batch(self):
         global _PENDING_ROOMS
-        
-        if not _PENDING_ROOMS:
-            return
+        if not _PENDING_ROOMS: return
 
         rooms_list = list(_PENDING_ROOMS)
-        _PENDING_ROOMS.clear() # Очищаем буфер перед отправкой
-        
-        _LOGGER.info(f"Инициация уборки сегментов: {rooms_list}")
-        
-        try:
-            await self.hass.services.async_call(
-                "roborock", "vacuum_clean_segment",
-                {
-                    "entity_id": self._main_vacuum,
-                    "segments": rooms_list,
-                    "repeats": 1
-                },
-                blocking=True # Ждем подтверждения от сервиса
-            )
-        except Exception as e:
-            _LOGGER.error(f"Ошибка при отправке команды Roborock: {e}")
-
-    async def async_stop(self):
-        """Полная остановка и сброс пакетов."""
         _PENDING_ROOMS.clear()
-        await self.hass.services.async_call("vacuum", "stop", {"entity_id": self._main_vacuum})
+        
+        _LOGGER.info(f"🚀 Запуск пакетной уборки комнат: {rooms_list}")
+        
+        # Используем универсальный вызов сервиса
+        await self.hass.services.async_call("vacuum", "send_command", {
+            "entity_id": self._master,
+            "command": "app_segment_clean",
+            "params": rooms_list
+        })
 
-    async def async_return_to_base(self):
-        """Возврат домой."""
-        _PENDING_ROOMS.clear()
-        await self.hass.services.async_call("vacuum", "return_to_base", {"entity_id": self._main_vacuum})
+    async def async_stop(self, **kwargs):
+        await self.hass.services.async_call("vacuum", "stop", {"entity_id": self._master})
+
+    async def async_return_to_base(self, **kwargs):
+        await self.hass.services.async_call("vacuum", "return_to_base", {"entity_id": self._master})
