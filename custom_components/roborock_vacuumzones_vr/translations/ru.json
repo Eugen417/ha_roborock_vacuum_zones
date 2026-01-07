@@ -1,0 +1,15 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Roborock Zones Jarvis",
+        "data": {
+          "room_name": "Название (Зал, Кухня...)",
+          "room_id": "Выберите комнату",
+          "master_vacuum": "Основной пылесос"
+        }
+      }
+    }
+  },
+  "title": "Roborock Zones Jarvis"
+}
