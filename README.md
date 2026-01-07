@@ -1,8 +1,8 @@
-# Roborock_VacuumZones_VR
+# Roborock_VacuumZones_VR (Jarvis Edition)
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge)](https://github.com/hacs/integration)
-[![version_badge](https://img.shields.io/badge/version-1.0.0-blue.svg?style=for-the-badge)](https://github.com/Eugen417/roborock_vacuumzones_vr)
-[![tested_badge](https://img.shields.io/badge/tested-Saros%20Z70-green.svg?style=for-the-badge)](https://github.com/Eugen417/roborock_vacuumzones_vr)
+[![version_badge](https://img.shields.io/badge/version-1.0.0-blue.svg?style=for-the-badge)](https://github.com/Eugen417/ha_roborock_vacuum_zones)
+[![tested_badge](https://img.shields.io/badge/tested-Saros%20Z70-green.svg?style=for-the-badge)](https://github.com/Eugen417/ha_roborock_vacuum_zones)
 
 [![Open your Home Assistant instance and open a repository in GitHub.](https://my.home-assistant.io/badges/github.svg)](https://my.home-assistant.io/redirect/github/?repository=Eugen417/ha_roborock_vacuum_zones)
 
@@ -17,7 +17,7 @@
 ## 🚀 Основные возможности
 
 - **One-Click Setup**: Больше не нужно вводить ID комнат вручную. Выбираете основной пылесос — и все комнаты добавляются автоматически.
-- **Динамическое сканирование**: Интеграция сама находит карту `image.saros_z70_map_0_custom` и извлекает из неё реальные названия (Кухня, Зал, Спальня и т.д.).
+- **Динамическое сканирование**: Интеграция сама находит карту и извлекает из неё реальные названия (Кухня, Зал, Спальня и т.д.).
 - **Виртуальные пылесосы**: Каждая комната представлена в HA как отдельное устройство `vacuum`. Это позволяет запускать уборку конкретной комнаты одной кнопкой или голосовой командой.
 - **Jarvis Ready**: Код оптимизирован для работы с LLM (Джарвисом). Сущности имеют понятные уникальные ID для легкого управления через голосовые ассистенты.
 
