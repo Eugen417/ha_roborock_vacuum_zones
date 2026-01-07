@@ -4,7 +4,7 @@
 [![version_badge](https://img.shields.io/badge/version-1.0.0-blue.svg?style=for-the-badge)](https://github.com/Eugen417/roborock_vacuumzones_vr)
 [![tested_badge](https://img.shields.io/badge/tested-Saros%20Z70-green.svg?style=for-the-badge)](https://github.com/Eugen417/roborock_vacuumzones_vr)
 
-[![Open your Home Assistant instance and open a repository in GitHub.](https://my.home-assistant.io/badges/github.svg)](https://my.home-assistant.io/redirect/github/?repository=Eugen417/roborock_vacuumzones_vr)
+[![Open your Home Assistant instance and open a repository in GitHub.](https://my.home-assistant.io/badges/github.svg)](https://my.home-assistant.io/redirect/github/?repository=Eugen417/ha_roborock_vacuum_zones)
 
 Интеллектуальная надстройка над официальной интеграцией Roborock для Home Assistant. 
 Создана для автоматического управления зонами (комнатами) пылесоса **Roborock Saros Z70** и других моделей с поддержкой сегментированной уборки.
