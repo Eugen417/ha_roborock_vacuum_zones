@@ -1,0 +1,1 @@
+# ha_roborock_vacuum_zones
