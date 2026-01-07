@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "title": "Roborock Zones Jarvis",
+        "title": "Roborock_VacuumZones_VR",
         "data": {
           "room_name": "Название (Зал, Кухня...)",
           "room_id": "Выберите комнату",
@@ -11,5 +11,5 @@
       }
     }
   },
-  "title": "Roborock Zones Jarvis"
+  "title": "Roborock_VacuumZones_VR"
 }
