@@ -2,7 +2,7 @@
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg?style=for-the-badge)](https://github.com/hacs/integration)
 [![version_badge](https://img.shields.io/badge/version-1.0.2-blue.svg?style=for-the-badge)](https://github.com/Eugen417/ha_roborock_vacuum_zones)
-[![tested_badge](https://img.shields.io/badge/tested-Saros%20Z70%20%7C%20S7%20MaxV%20%7C%20Q7-green.svg?style=for-the-badge)](https://github.com/Eugen417/ha_roborock_vacuum_zones)
+[![tested_badge](https://img.shields.io/badge/tested-Saros%20Z70%20%7C%20S7%20MaxV%20%7C%20Q7%20Max-green.svg?style=for-the-badge)](https://github.com/Eugen417/ha_roborock_vacuum_zones)
 
 Интеграция для Home Assistant, которая автоматически создает **отдельный виртуальный пылесос для каждой комнаты** вашего Roborock. Это позволяет управлять уборкой конкретных зон так же просто, как включением света.
 
